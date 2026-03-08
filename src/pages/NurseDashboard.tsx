@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import {
   Calendar, Clock, ArrowLeftRight, Bell, User, LogOut, Menu, X,
-  Activity, Building2, ChevronRight, Loader2
+  Activity, Building2, ChevronRight, Loader2, BellRing
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { subscribeToPush, isPushSupported } from "@/lib/pushNotifications";
 
 const SHIFT_LABELS: Record<string, string> = {
   morning: "Morning (6AM-2PM)",
