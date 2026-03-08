@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Phone, Lock, UserPlus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 
 const NurseLogin = () => {
@@ -15,6 +16,13 @@ const NurseLogin = () => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user, role: authRole, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user && authRole === "nurse") {
+      navigate("/nurse-dashboard", { replace: true });
+    }
+  }, [authLoading, user, authRole, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,30 +58,16 @@ const NurseLogin = () => {
         if (signUpError) throw signUpError;
 
         if (signUpData.user) {
-          // Assign nurse role
-          const { error: roleError } = await supabase.from("user_roles").insert({
-            user_id: signUpData.user.id,
-            role: "nurse" as const,
-          });
-          if (roleError) throw roleError;
-
-          // Link nurse record to this user
-          const { error: linkError } = await supabase
-            .from("nurses")
-            .update({ user_id: signUpData.user.id, name })
-            .eq("phone", phone)
-            .is("user_id", null);
-          if (linkError) throw linkError;
-
+          // Role assignment and nurse linking are handled automatically by database trigger
           toast({ title: "Registration Successful", description: "Welcome to Caritas Hospital!" });
-          navigate("/nurse-dashboard");
+          // Navigation handled by auth context useEffect
         }
       } else {
         // Login
         const email = `${phone.replace(/[^0-9]/g, "")}@nurse.local`;
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/nurse-dashboard");
+        // Navigation handled by useEffect once auth role loads
       }
     } catch (error: any) {
       toast({
