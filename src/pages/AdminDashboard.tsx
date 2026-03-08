@@ -50,7 +50,7 @@ const AdminDashboard = () => {
             ))}
           </nav>
           <div className="border-t p-3">
-            <Link to="/"><button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted"><LogOut size={18} /> Sign Out</button></Link>
+            <button onClick={handleSignOut} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted"><LogOut size={18} /> Sign Out</button>
           </div>
         </div>
       </aside>
