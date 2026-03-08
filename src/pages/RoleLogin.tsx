@@ -20,6 +20,7 @@ const RoleLogin = ({ role, dashboardPath, emailDomain }: RoleLoginProps) => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { user, role: authRole, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
   const expectedRole = role === "Admin" ? "admin" : "head_nurse";
 
@@ -34,10 +35,9 @@ const RoleLogin = ({ role, dashboardPath, emailDomain }: RoleLoginProps) => {
     setLoading(true);
 
     try {
-      const email = `${username}@${emailDomain}`;
+      const email = `${username.trim()}@${emailDomain}`;
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate(dashboardPath);
     } catch (error: any) {
       toast({
         title: "Login Failed",
