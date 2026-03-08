@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, MapPin, Award, Users, ChevronRight } from "lucide-react";
+import { Menu, X, MapPin, Award, Users, ChevronRight, Phone, Heart, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 import hospital1 from "@/assets/hospital-1.jpg";
@@ -8,9 +8,9 @@ import hospital2 from "@/assets/hospital-2.jpg";
 import hospital3 from "@/assets/hospital-3.jpg";
 
 const slides = [
-  { image: hospital1, title: "World-Class Healthcare Facility", subtitle: "Providing excellence in patient care since 1985" },
-  { image: hospital2, title: "Modern Nursing Stations", subtitle: "Equipped with the latest medical technology" },
-  { image: hospital3, title: "Dedicated Nursing Team", subtitle: "Over 500 skilled nurses serving our community" },
+  { image: hospital1, title: "Guided by Expertise, Defined by Compassion", subtitle: "Experience healthcare at its finest at Caritas Hospital" },
+  { image: hospital2, title: "65 Years of Healing, a Legacy of Excellence", subtitle: "A tapestry of excellence redefining healthcare since 1959" },
+  { image: hospital3, title: "Walking in Compassion, Serving with Love", subtitle: "Fostering a healing environment driven by genuine warmth" },
 ];
 
 const WelcomePage = () => {
@@ -30,16 +30,19 @@ const WelcomePage = () => {
       <header className="gradient-primary sticky top-0 z-50 shadow-healthcare">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="Nurses Connect" className="h-10 w-10 rounded-lg" />
-            <span className="text-xl font-bold text-primary-foreground">Nurses Connect</span>
+            <img src={logo} alt="Caritas Hospital" className="h-10 w-10 rounded-lg" />
+            <div>
+              <span className="text-lg font-bold text-primary-foreground leading-tight block">Caritas Hospital</span>
+              <span className="text-[10px] text-primary-foreground/70 leading-none">Nurses Connect</span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden items-center gap-1 md:flex">
             <a href="#about" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors">About</a>
+            <a href="#departments" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors">Departments</a>
             <a href="#location" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors">Location</a>
-            <a href="#awards" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors">Awards</a>
-            <a href="#board" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors">Board Members</a>
+            <a href="#awards" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors">Accreditations</a>
             <div className="ml-4 flex gap-2">
               <Link to="/nurse-login"><Button variant="pink" size="sm">Nurse Portal</Button></Link>
               <Link to="/headnurse-login"><Button variant="secondary" size="sm" className="font-semibold">Head Nurse</Button></Link>
@@ -58,9 +61,9 @@ const WelcomePage = () => {
           <div className="border-t border-primary-foreground/10 px-4 pb-4 md:hidden">
             <nav className="flex flex-col gap-2 pt-2">
               <a href="#about" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80">About</a>
+              <a href="#departments" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80">Departments</a>
               <a href="#location" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80">Location</a>
-              <a href="#awards" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80">Awards</a>
-              <a href="#board" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80">Board Members</a>
+              <a href="#awards" className="rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80">Accreditations</a>
               <div className="mt-2 flex flex-col gap-2">
                 <Link to="/nurse-login"><Button variant="pink" size="sm" className="w-full">Nurse Portal</Button></Link>
                 <Link to="/headnurse-login"><Button variant="secondary" size="sm" className="w-full">Head Nurse</Button></Link>
@@ -70,6 +73,15 @@ const WelcomePage = () => {
           </div>
         )}
       </header>
+
+      {/* Emergency Banner */}
+      <div className="bg-destructive/10 border-b border-destructive/20 py-2">
+        <div className="container mx-auto px-4 flex items-center justify-center gap-2 text-sm">
+          <Phone size={14} className="text-destructive" />
+          <span className="font-medium text-destructive">24x7 Emergency:</span>
+          <a href="tel:9496555200" className="font-bold text-destructive hover:underline">+91(0) 9496 555 200</a>
+        </div>
+      </div>
 
       {/* Hero Carousel */}
       <section className="relative h-[500px] overflow-hidden md:h-[600px]">
@@ -85,13 +97,12 @@ const WelcomePage = () => {
               <p className="mt-2 text-lg text-primary-foreground/80 md:text-xl">{slide.subtitle}</p>
               <Link to="/nurse-login">
                 <Button variant="pink" size="lg" className="mt-6">
-                  Get Started <ChevronRight size={18} />
+                  Staff Login <ChevronRight size={18} />
                 </Button>
               </Link>
             </div>
           </div>
         ))}
-        {/* Dots */}
         <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
           {slides.map((_, i) => (
             <button
@@ -106,15 +117,15 @@ const WelcomePage = () => {
       {/* About Section */}
       <section id="about" className="py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-center text-3xl font-bold text-foreground">About <span className="text-primary">Our Hospital</span></h2>
+          <h2 className="text-center text-3xl font-bold text-foreground">About <span className="text-primary">Caritas Hospital</span></h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">
-            Established in 1985, our hospital has been at the forefront of medical innovation, providing compassionate care with cutting-edge technology to over 100,000 patients annually.
+            Caritas Hospital & Institute of Health Sciences, Kottayam, Kerala — a NABH-accredited multi-specialty hospital with 65+ years of excellence in patient care, powered by a dedicated team of professionals committed to compassion and clinical innovation.
           </p>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
-              { icon: MapPin, title: "6 Departments", desc: "ICU, Emergency, Pediatrics, General Ward, Operation Theater, and specialized units" },
-              { icon: Users, title: "500+ Nurses", desc: "Highly trained nursing staff across 4 divisions ensuring round-the-clock care" },
-              { icon: Award, title: "15+ Awards", desc: "Recognized nationally for excellence in patient care and nursing standards" },
+              { icon: Stethoscope, title: "16 Departments", desc: "From Cancer Institute to Urology — comprehensive Centres of Excellence across all medical specialties" },
+              { icon: Users, title: "Dedicated Nurses", desc: "A highly trained nursing staff with NABH Nursing Excellence certification, ensuring round-the-clock care" },
+              { icon: Heart, title: "65+ Years of Healing", desc: "Great Place to Work certified, Diamond Status by WSO for Excellence in Stroke Care" },
             ].map((item) => (
               <div key={item.title} className="rounded-xl bg-card p-6 shadow-card transition-transform hover:-translate-y-1">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
@@ -128,57 +139,58 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      {/* Location */}
-      <section id="location" className="bg-card py-20">
+      {/* Departments */}
+      <section id="departments" className="bg-card py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-center text-3xl font-bold text-foreground">Our <span className="text-primary">Location</span></h2>
-          <div className="mx-auto mt-8 max-w-xl rounded-xl bg-background p-8 shadow-card text-center">
-            <MapPin className="mx-auto h-10 w-10 text-accent" />
-            <h3 className="mt-4 text-xl font-bold text-foreground">City General Hospital</h3>
-            <p className="mt-2 text-muted-foreground">123 Healthcare Boulevard, Medical District<br />Metro City, MC 45678</p>
-            <p className="mt-4 text-sm text-muted-foreground">Open 24/7 • Emergency Services Available</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Awards */}
-      <section id="awards" className="py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="text-center text-3xl font-bold text-foreground">Awards & <span className="text-accent">Recognition</span></h2>
-          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <h2 className="text-center text-3xl font-bold text-foreground">Centres of <span className="text-primary">Excellence</span></h2>
+          <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted-foreground">Discover exceptional care through our specialized centres</p>
+          <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { year: "2024", title: "Best Nursing Excellence" },
-              { year: "2023", title: "Patient Safety Award" },
-              { year: "2022", title: "Top Hospital — National" },
-              { year: "2021", title: "Innovation in Healthcare" },
-            ].map((award) => (
-              <div key={award.year} className="rounded-xl border bg-card p-6 text-center shadow-card">
-                <Award className="mx-auto h-8 w-8 text-accent" />
-                <p className="mt-3 text-2xl font-bold text-primary">{award.year}</p>
-                <p className="mt-1 text-sm font-medium text-foreground">{award.title}</p>
+              "Caritas Cancer Institute", "Caritas Heart Institute", "Caritas Neuro Sciences",
+              "Critical Care Medicine", "Dermatology & Cosmetology", "Emergency Medicine & Trauma Care",
+              "Gastro Sciences", "General Medicine", "General Surgery",
+              "Nephrology & Renal Transplant", "Obstetrics & Gynaecology",
+              "Orthopaedics & Joint Replacement", "Paediatrics & Paediatric Surgery",
+              "Physical Medicine & Rehabilitation", "Rheumatology", "Urology",
+            ].map((dept) => (
+              <div key={dept} className="rounded-lg bg-background px-4 py-3 shadow-sm border text-sm font-medium text-foreground hover:border-primary/30 hover:bg-primary/5 transition-colors">
+                {dept}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Board Members */}
-      <section id="board" className="bg-card py-20">
+      {/* Location */}
+      <section id="location" className="py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-center text-3xl font-bold text-foreground">Board <span className="text-primary">Members</span></h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <h2 className="text-center text-3xl font-bold text-foreground">Our <span className="text-primary">Location</span></h2>
+          <div className="mx-auto mt-8 max-w-xl rounded-xl bg-card p-8 shadow-card text-center">
+            <MapPin className="mx-auto h-10 w-10 text-accent" />
+            <h3 className="mt-4 text-xl font-bold text-foreground">Caritas Hospital & Institute of Health Sciences</h3>
+            <p className="mt-2 text-muted-foreground">Thellakom P.O., Kottayam<br />Kerala - 686630, India</p>
+            <p className="mt-4 text-sm text-muted-foreground">Open 24/7 • Emergency: +91(0) 9496 555 200</p>
+            <p className="mt-1 text-sm text-muted-foreground">General: 0481 279 2500</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Accreditations */}
+      <section id="awards" className="bg-card py-20">
+        <div className="container mx-auto px-4">
+          <h2 className="text-center text-3xl font-bold text-foreground">Accreditations & <span className="text-accent">Certifications</span></h2>
+          <p className="mx-auto mt-2 max-w-lg text-center text-sm text-muted-foreground">Elevating standards, ensuring excellence</p>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[
-              { name: "Dr. Sarah Mitchell", role: "Chief Medical Officer", exp: "25+ years experience" },
-              { name: "Dr. James Park", role: "Director of Nursing", exp: "20+ years experience" },
-              { name: "Dr. Amelia Chen", role: "Hospital Administrator", exp: "18+ years experience" },
-            ].map((member) => (
-              <div key={member.name} className="rounded-xl bg-background p-6 text-center shadow-card">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
-                  {member.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <h3 className="mt-4 text-lg font-bold text-foreground">{member.name}</h3>
-                <p className="text-sm font-medium text-primary">{member.role}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{member.exp}</p>
+              { title: "NABH Accreditation", desc: "National Accreditation Board for Hospitals" },
+              { title: "NABH Nursing Excellence", desc: "Certified for nursing quality standards" },
+              { title: "NABL Accreditation", desc: "Laboratory quality certification" },
+              { title: "Great Place to Work", desc: "Certified since 2025" },
+            ].map((award) => (
+              <div key={award.title} className="rounded-xl border bg-background p-6 text-center shadow-card">
+                <Award className="mx-auto h-8 w-8 text-accent" />
+                <p className="mt-3 text-sm font-bold text-foreground">{award.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{award.desc}</p>
               </div>
             ))}
           </div>
@@ -188,7 +200,7 @@ const WelcomePage = () => {
       {/* Footer */}
       <footer className="gradient-primary py-8">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-primary-foreground/80">© 2026 Nurses Connect — City General Hospital. All rights reserved.</p>
+          <p className="text-sm text-primary-foreground/80">© 2026 Nurses Connect — Caritas Hospital & Institute of Health Sciences, Kottayam. All rights reserved.</p>
         </div>
       </footer>
     </div>
