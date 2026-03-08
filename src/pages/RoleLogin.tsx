@@ -38,7 +38,7 @@ const RoleLogin = ({ role, dashboardPath, emailDomain }: RoleLoginProps) => {
       const email = `${username.trim()}@${emailDomain}`;
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate(dashboardPath, { replace: true });
+      // Navigation is handled by the useEffect once authRole is loaded
     } catch (error: any) {
       toast({
         title: "Login Failed",
