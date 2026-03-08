@@ -209,6 +209,149 @@ const AdminOverview = () => {
   );
 };
 
+// ─── Head Nurses ────────────────────────────────────────────────
+
+const AdminHeadNurses = () => {
+  const [headNurses, setHeadNurses] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ name: "", username: "", password: "", department_id: "" });
+
+  const fetchData = async () => {
+    setLoading(true);
+    const [hnRes, deptRes] = await Promise.all([
+      supabase.from("head_nurses").select("id, name, username, department_id, departments:departments(name), created_at"),
+      supabase.from("departments").select("id, name").order("name"),
+    ]);
+    setHeadNurses(hnRes.data || []);
+    setDepartments(deptRes.data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handleCreate = async () => {
+    if (!form.name || !form.username || !form.password) {
+      toast({ title: "Missing fields", description: "Name, username and password are required.", variant: "destructive" });
+      return;
+    }
+    if (form.password.length < 6) {
+      toast({ title: "Weak password", description: "Password must be at least 6 characters.", variant: "destructive" });
+      return;
+    }
+    setCreating(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const email = `${form.username.toLowerCase().replace(/\s/g, "")}@headnurse.local`;
+      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/create-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        body: JSON.stringify({
+          email,
+          password: form.password,
+          role: "head_nurse",
+          name: form.name,
+          username: form.username,
+          department_id: form.department_id || null,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to create head nurse");
+      toast({ title: "Head Nurse Created", description: `${form.name} can now log in with username "${form.username}".` });
+      setForm({ name: "", username: "", password: "", department_id: "" });
+      setShowForm(false);
+      await fetchData();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+
+  return (
+    <div className="animate-fade-in space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-bold text-foreground">Head Nurses ({headNurses.length})</h2>
+        <Button variant="hero" size="sm" onClick={() => setShowForm(!showForm)}>
+          <Plus size={16} className="mr-1" /> Add Head Nurse
+        </Button>
+      </div>
+
+      {showForm && (
+        <div className="rounded-xl bg-card p-5 shadow-card space-y-4">
+          <h3 className="text-sm font-bold text-foreground">Create Head Nurse Account</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Full Name *</label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Sarah Johnson" className="mt-1" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Username *</label>
+              <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="e.g. sjohnson" className="mt-1" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Password *</label>
+              <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 6 characters" className="mt-1" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Department</label>
+              <Select value={form.department_id} onValueChange={(v) => setForm({ ...form, department_id: v })}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Select department" /></SelectTrigger>
+                <SelectContent>
+                  {departments.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="hero" size="sm" onClick={handleCreate} disabled={creating}>
+              {creating ? <Loader2 size={14} className="mr-1 animate-spin" /> : <Check size={14} className="mr-1" />}
+              {creating ? "Creating..." : "Create Account"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {headNurses.length === 0 ? (
+        <div className="rounded-xl bg-card p-12 text-center shadow-card">
+          <UserPlus className="mx-auto h-10 w-10 text-muted-foreground/30" />
+          <p className="mt-4 text-sm text-muted-foreground">No head nurses yet. Click "Add Head Nurse" to create one.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-xl bg-card shadow-card">
+          <table className="w-full text-sm">
+            <thead><tr className="border-b bg-muted/50">
+              <th className="px-4 py-3 text-left font-semibold text-foreground">Name</th>
+              <th className="px-4 py-3 text-left font-semibold text-foreground">Username</th>
+              <th className="px-4 py-3 text-left font-semibold text-foreground">Department</th>
+              <th className="px-4 py-3 text-left font-semibold text-foreground">Created</th>
+            </tr></thead>
+            <tbody className="divide-y">
+              {headNurses.map((hn) => (
+                <tr key={hn.id} className="hover:bg-muted/30">
+                  <td className="px-4 py-3 font-medium text-foreground">{hn.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{hn.username}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{hn.departments?.name || "—"}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{new Date(hn.created_at).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Nurses ─────────────────────────────────────────────────────
 
 const AdminNurses = () => {
