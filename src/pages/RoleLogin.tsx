@@ -19,7 +19,15 @@ const RoleLogin = ({ role, dashboardPath, emailDomain }: RoleLoginProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const { user, role: authRole, loading: authLoading } = useAuth();
+
+  const expectedRole = role === "Admin" ? "admin" : "head_nurse";
+
+  useEffect(() => {
+    if (!authLoading && user && authRole === expectedRole) {
+      navigate(dashboardPath, { replace: true });
+    }
+  }, [authLoading, user, authRole, expectedRole, navigate, dashboardPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
