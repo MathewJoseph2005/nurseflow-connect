@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import {
-  LayoutDashboard, Users, Calendar, ArrowLeftRight, Activity, LogOut,
-  Menu, X, Loader2, Search, Wand2, Check, XCircle
+  LayoutDashboard, Users, UserPlus, Calendar, ArrowLeftRight, Activity, LogOut,
+  Menu, X, Loader2, Search, Wand2, Check, XCircle, Plus
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import logo from "@/assets/logo.png";
 
 type Tab = "overview" | "nurses" | "head_nurses" | "schedules" | "swaps" | "logs";
