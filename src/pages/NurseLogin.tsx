@@ -67,7 +67,7 @@ const NurseLogin = () => {
         const email = `${phone.replace(/[^0-9]/g, "")}@nurse.local`;
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/nurse-dashboard");
+        // Navigation handled by useEffect once auth role loads
       }
     } catch (error: any) {
       toast({
