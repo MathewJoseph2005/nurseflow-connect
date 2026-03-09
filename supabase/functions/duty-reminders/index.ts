@@ -16,9 +16,9 @@ const SHIFT_START_HOURS: Record<string, number> = {
 
 // Reminder windows in hours before shift
 const REMINDER_WINDOWS = [
-  { type: "5h", hoursBefore: 5 },
+  { type: "12h", hoursBefore: 12 },
+  { type: "6h", hoursBefore: 6 },
   { type: "3h", hoursBefore: 3 },
-  { type: "1h", hoursBefore: 1 },
 ];
 
 serve(async (req) => {
@@ -93,7 +93,7 @@ serve(async (req) => {
         // Build notification message
         const deptName = (schedule.department as any)?.name || "your department";
         const shiftLabel = schedule.shift_type.charAt(0).toUpperCase() + schedule.shift_type.slice(1);
-        const timeLabel = reminder.hoursBefore === 1 ? "1 hour" : `${reminder.hoursBefore} hours`;
+        const timeLabel = `${reminder.hoursBefore} hours`;
 
         const title = `⏰ Duty Reminder - ${timeLabel} left`;
         const message = `Hi ${nurse.name}, your ${shiftLabel} shift at ${deptName} on ${schedule.duty_date} starts in ${timeLabel}. Please prepare accordingly.`;
