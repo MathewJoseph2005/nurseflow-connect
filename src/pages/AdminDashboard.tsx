@@ -94,6 +94,7 @@ const AdminDashboard = () => {
           {activeTab === "overview" && <AdminOverview />}
           {activeTab === "nurses" && <AdminNurses />}
           {activeTab === "head_nurses" && <AdminHeadNurses />}
+          {activeTab === "admins" && <AdminAdmins />}
           {activeTab === "schedules" && <AdminSchedules />}
           {activeTab === "swaps" && <AdminSwaps />}
           {activeTab === "logs" && <AdminLogs />}
