@@ -215,7 +215,7 @@ const NurseDashboard = () => {
             <BellRing className="h-5 w-5 text-primary shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">Enable Push Notifications</p>
-              <p className="text-xs text-muted-foreground">Get duty reminders 5h, 3h, and 1h before your shifts.</p>
+              <p className="text-xs text-muted-foreground">Get duty reminders 12h, 6h, and 3h before your shifts.</p>
             </div>
             <div className="flex gap-2">
               <Button size="sm" variant="ghost" onClick={handleDismissPush} className="text-xs">Dismiss</Button>
