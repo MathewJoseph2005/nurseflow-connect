@@ -16,9 +16,9 @@ const SHIFT_START_HOURS: Record<string, number> = {
 
 // Reminder windows in hours before shift
 const REMINDER_WINDOWS = [
-  { type: "5h", hoursBefore: 5 },
+  { type: "12h", hoursBefore: 12 },
+  { type: "6h", hoursBefore: 6 },
   { type: "3h", hoursBefore: 3 },
-  { type: "1h", hoursBefore: 1 },
 ];
 
 serve(async (req) => {
