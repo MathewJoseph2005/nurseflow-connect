@@ -93,7 +93,7 @@ serve(async (req) => {
         // Build notification message
         const deptName = (schedule.department as any)?.name || "your department";
         const shiftLabel = schedule.shift_type.charAt(0).toUpperCase() + schedule.shift_type.slice(1);
-        const timeLabel = reminder.hoursBefore === 1 ? "1 hour" : `${reminder.hoursBefore} hours`;
+        const timeLabel = `${reminder.hoursBefore} hours`;
 
         const title = `⏰ Duty Reminder - ${timeLabel} left`;
         const message = `Hi ${nurse.name}, your ${shiftLabel} shift at ${deptName} on ${schedule.duty_date} starts in ${timeLabel}. Please prepare accordingly.`;
