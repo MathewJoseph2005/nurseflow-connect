@@ -120,11 +120,26 @@ serve(async (req) => {
         if (subscriptions && subscriptions.length > 0) {
           for (const sub of subscriptions) {
             try {
-              // Use Web Push protocol
               await sendWebPush(sub, { title, body: message, icon: "/favicon.ico", tag: `duty-${reminder.type}-${schedule.id}` });
             } catch (pushErr) {
               console.error(`Push failed for endpoint ${sub.endpoint}:`, pushErr);
             }
+          }
+        }
+
+        // Send WhatsApp reminder
+        const { data: nursePhone } = await supabase
+          .from("nurses")
+          .select("phone")
+          .eq("id", schedule.nurse_id)
+          .maybeSingle();
+
+        if (nursePhone?.phone) {
+          try {
+            await sendWhatsAppMessage(nursePhone.phone, message);
+            console.log(`WhatsApp reminder sent to ${nurse.name} at ${nursePhone.phone}`);
+          } catch (waErr) {
+            console.error(`WhatsApp failed for ${nurse.name}:`, waErr);
           }
         }
 
