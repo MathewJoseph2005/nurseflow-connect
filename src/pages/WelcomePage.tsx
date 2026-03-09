@@ -46,7 +46,7 @@ const WelcomePage = () => {
             <div className="ml-4 flex gap-2">
               <Link to="/nurse-login"><Button variant="pink" size="sm">Nurse Portal</Button></Link>
               <Link to="/headnurse-login"><Button variant="secondary" size="sm" className="font-semibold">Head Nurse</Button></Link>
-              <Link to="/admin-login"><Button variant="outline" size="sm" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 font-semibold">Admin</Button></Link>
+              <Link to="/admin-login"><Button variant="secondary" size="sm" className="font-semibold">Admin</Button></Link>
             </div>
           </nav>
 
