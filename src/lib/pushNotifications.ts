@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/integrations/supabase/client";
 
 // VAPID public key - will be set from edge function
@@ -25,12 +26,15 @@ export async function getVapidPublicKey(): Promise<string> {
   }
 
   // Generate new keys via edge function
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
   const response = await fetch(
-    `https://${projectId}.supabase.co/functions/v1/generate-vapid-keys`,
+    `${apiBase}/functions/generate-vapid-keys`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("nurseflow_access_token") || ""}`,
+      },
     }
   );
 

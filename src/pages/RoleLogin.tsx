@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,10 @@ const RoleLogin = ({ role, dashboardPath, emailDomain }: RoleLoginProps) => {
     setLoading(true);
 
     try {
-      const email = `${username.trim()}@${emailDomain}`;
+      const normalizedInput = username.trim().toLowerCase();
+      const email = normalizedInput.includes("@")
+        ? normalizedInput
+        : `${normalizedInput}@${emailDomain}`;
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       // Navigation is handled by the useEffect once authRole is loaded
@@ -68,7 +72,7 @@ const RoleLogin = ({ role, dashboardPath, emailDomain }: RoleLoginProps) => {
               <Label htmlFor="username">Username</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter username" className="pl-10" required />
+                <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter username or full email" className="pl-10" required />
               </div>
             </div>
             <div className="space-y-2">

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -170,28 +171,58 @@ const HNScheduleView = () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/generate-schedule`,
-        {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
+
+      const requestGenerate = async (forceAssignRemaining = false) => {
+        const response = await fetch(`${apiBase}/functions/generate-schedule`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           },
-          body: JSON.stringify({ week_number: selectedWeek, year: selectedYear }),
+          body: JSON.stringify({
+            week_number: selectedWeek,
+            year: selectedYear,
+            force_assign_remaining: forceAssignRemaining,
+          }),
+        });
+        const payload = await response.json();
+        return { response, payload };
+      };
+
+      let { response: res, payload: result } = await requestGenerate(false);
+
+      if (!res.ok && result?.code === "INSUFFICIENT_NURSES" && result?.can_force_generate) {
+        const confirmFallback = window.confirm(
+          `${result.error}\n\n${result.prompt || "Would you like to continue with available nurses?"}`
+        );
+        if (!confirmFallback) {
+          toast({
+            title: "Not enough nurses to auto-generate",
+            description: "Add more nurses or use one-click fallback generation.",
+            variant: "destructive",
+          });
+          return;
         }
-      );
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Failed to generate");
+
+        const fallbackResult = await requestGenerate(true);
+        res = fallbackResult.response;
+        result = fallbackResult.payload;
+      }
+
+      if (!res.ok) {
+        throw new Error(result?.error || "Unable to generate schedule");
+      }
+
       toast({
         title: "Schedule Generated",
-        description: `Created ${result.stats.total_entries} shift entries for ${result.stats.nurses_scheduled} nurses.`,
+        description: result?.fallback_used
+          ? `Created ${result.stats.total_entries} entries using available nurses (fallback mode).`
+          : `Created ${result.stats.total_entries} shift entries for ${result.stats.nurses_scheduled} nurses.`,
       });
       await fetchSchedule();
     } catch (error: any) {
-      toast({ title: "Generation Failed", description: error.message, variant: "destructive" });
+      toast({ title: "Cannot Auto-Generate", description: error.message, variant: "destructive" });
     } finally {
       setGenerating(false);
     }
@@ -314,10 +345,10 @@ const HNSwapView = () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/handle-swap`, {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
+      const res = await fetch(`${apiBase}/functions/handle-swap`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ swap_id: id, action: status }),
       });
       const result = await res.json();
@@ -543,21 +574,30 @@ const HNManageView = () => {
   };
 
   const handleRemove = async (nurse: any) => {
+    // Optimistically remove from UI so the row disappears immediately.
+    const previousNurses = nurses;
+    setNurses((prev) => prev.filter((n) => n.id !== nurse.id));
+
     const { data: sessionData } = await supabase.auth.getSession();
     const userId = sessionData.session?.user?.id;
 
     const { error } = await supabase.from("nurses").update({ is_active: false }).eq("id", nurse.id);
     if (error) {
+      setNurses(previousNurses);
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
 
-    await supabase.from("nurse_removals").insert({
+    const { error: removalError } = await supabase.from("nurse_removals").insert({
       nurse_id: nurse.id,
       nurse_name: nurse.name,
       reason: "Removed by Head Nurse",
       removed_by: userId!,
     });
+
+    if (removalError) {
+      toast({ title: "Warning", description: "Nurse was removed but removal log could not be saved.", variant: "destructive" });
+    }
 
     toast({ title: "Nurse Removed", description: `${nurse.name} has been deactivated.` });
     fetchData();

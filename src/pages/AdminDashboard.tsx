@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -219,7 +220,7 @@ const AdminHeadNurses = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", username: "", password: "", department_id: "" });
+  const [form, setForm] = useState({ name: "", username: "", password: "", confirmPassword: "", department_id: "" });
 
   const fetchData = async () => {
     setLoading(true);
@@ -235,26 +236,31 @@ const AdminHeadNurses = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleCreate = async () => {
-    if (!form.name || !form.username || !form.password) {
-      toast({ title: "Missing fields", description: "Name, username and password are required.", variant: "destructive" });
+    if (!form.name || !form.username || !form.password || !form.confirmPassword) {
+      toast({ title: "Missing fields", description: "Name, username, password and confirm password are required.", variant: "destructive" });
       return;
     }
     if (form.password.length < 6) {
       toast({ title: "Weak password", description: "Password must be at least 6 characters.", variant: "destructive" });
       return;
     }
+    if (form.password !== form.confirmPassword) {
+      toast({ title: "Password mismatch", description: "Passwords do not match.", variant: "destructive" });
+      return;
+    }
     setCreating(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
       const email = `${form.username.toLowerCase().replace(/\s/g, "")}@headnurse.local`;
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/create-user`, {
+      const res = await fetch(`${apiBase}/functions/create-user`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           email,
           password: form.password,
+          confirmPassword: form.confirmPassword,
           role: "head_nurse",
           name: form.name,
           username: form.username,
@@ -264,7 +270,7 @@ const AdminHeadNurses = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Failed to create head nurse");
       toast({ title: "Head Nurse Created", description: `${form.name} can now log in with username "${form.username}".` });
-      setForm({ name: "", username: "", password: "", department_id: "" });
+      setForm({ name: "", username: "", password: "", confirmPassword: "", department_id: "" });
       setShowForm(false);
       await fetchData();
     } catch (err: any) {
@@ -300,6 +306,10 @@ const AdminHeadNurses = () => {
             <div>
               <label className="text-xs font-medium text-muted-foreground">Password *</label>
               <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 6 characters" className="mt-1" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Confirm Password *</label>
+              <Input type="password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} placeholder="Confirm password" className="mt-1" />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Department</label>
@@ -458,18 +468,48 @@ const AdminSchedules = () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/generate-schedule`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-        body: JSON.stringify({ week_number: selectedWeek, year: selectedYear }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Failed");
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
+      const requestGenerate = async (forceAssignRemaining = false) => {
+        const response = await fetch(`${apiBase}/functions/generate-schedule`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            week_number: selectedWeek,
+            year: selectedYear,
+            force_assign_remaining: forceAssignRemaining,
+          }),
+        });
+        const payload = await response.json();
+        return { response, payload };
+      };
+
+      let { response: res, payload: result } = await requestGenerate(false);
+
+      if (!res.ok && result?.code === "INSUFFICIENT_NURSES" && result?.can_force_generate) {
+        const confirmFallback = window.confirm(
+          `${result.error}\n\n${result.prompt || "Would you like to continue with available nurses?"}`
+        );
+
+        if (!confirmFallback) {
+          toast({
+            title: "Not enough nurses to auto-generate",
+            description: "Add more nurses or use one-click fallback generation.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const fallbackResult = await requestGenerate(true);
+        res = fallbackResult.response;
+        result = fallbackResult.payload;
+      }
+
+      if (!res.ok) throw new Error(result?.error || "Unable to generate schedule");
+
       toast({ title: "Schedule Generated", description: `${result.stats.total_entries} entries for ${result.stats.nurses_scheduled} nurses.` });
       await fetchSchedule();
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: "Cannot Auto-Generate", description: err.message, variant: "destructive" });
     } finally {
       setGenerating(false);
     }
@@ -569,10 +609,10 @@ const AdminSwaps = () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/handle-swap`, {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
+      const res = await fetch(`${apiBase}/functions/handle-swap`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ swap_id: id, action: status }),
       });
       const result = await res.json();
@@ -707,11 +747,11 @@ const AdminAdmins = () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
       const email = `${form.username.toLowerCase().replace(/\s/g, "")}@admin.local`;
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/create-user`, {
+      const res = await fetch(`${apiBase}/functions/create-user`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           email,
           password: form.password,

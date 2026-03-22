@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ const NurseLogin = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -30,6 +32,17 @@ const NurseLogin = () => {
 
     try {
       if (isRegister) {
+        // Validate password confirmation
+        if (password !== confirmPassword) {
+          toast({
+            title: "Registration Failed",
+            description: "Passwords do not match",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
         // Check if phone was pre-entered by head nurse
         const { data: phoneExists, error: checkError } = await supabase.rpc(
           "check_nurse_phone_exists",
@@ -114,6 +127,15 @@ const NurseLogin = () => {
                 <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" className="pl-10" required />
               </div>
             </div>
+            {isRegister && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm your password" className="pl-10" required />
+                </div>
+              </div>
+            )}
             <Button type="submit" variant="hero" className="w-full" size="lg" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isRegister ? "Register" : "Sign In"}

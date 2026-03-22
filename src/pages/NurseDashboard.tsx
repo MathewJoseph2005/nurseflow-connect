@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -242,7 +243,7 @@ const ScheduleView = ({ nurseId, deptName }: { nurseId: string; deptName: string
   const [loading, setLoading] = useState(true);
   const [workload, setWorkload] = useState<string>("low");
 
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const weekNum = getISOWeek(now);
   const year = now.getFullYear();
 
@@ -265,7 +266,7 @@ const ScheduleView = ({ nurseId, deptName }: { nurseId: string; deptName: string
       setLoading(false);
     };
     fetch();
-  }, [nurseId, weekNum, year]);
+  }, [nurseId, now, weekNum, year]);
 
   if (loading) {
     return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -358,7 +359,7 @@ const SwapView = ({ nurseId, divisionId }: { nurseId: string; divisionId: string
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState<string | null>(null);
 
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const weekNum = getISOWeek(now);
   const year = now.getFullYear();
 
@@ -395,7 +396,7 @@ const SwapView = ({ nurseId, divisionId }: { nurseId: string; divisionId: string
       setLoading(false);
     };
     fetchData();
-  }, [nurseId, weekNum, year]);
+  }, [nurseId, now, weekNum, year]);
 
   // When a schedule is selected, find available nurses in same division with different shifts on same date
   useEffect(() => {
